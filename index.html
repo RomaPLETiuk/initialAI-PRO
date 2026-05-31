@@ -1,0 +1,2235 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ІніціалAI — Визначення ініціалів нового покоління</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg-secondary: #12121a;
+      --surface: rgba(255, 255, 255, 0.03);
+      --surface-hover: rgba(255, 255, 255, 0.06);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.15);
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --purple: #a855f7;
+      --cyan: #22d3ee;
+      --green: #22c55e;
+      --gradient-1: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+      --gradient-2: linear-gradient(135deg, #22d3ee 0%, #6366f1 100%);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-lg: 24px;
+      --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Animated background */
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-gradient__orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.5;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .bg-gradient__orb--1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.4), transparent 70%);
+      top: -200px; left: -100px;
+    }
+
+    .bg-gradient__orb--2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.35), transparent 70%);
+      top: 40%; right: -150px;
+      animation-delay: -7s;
+    }
+
+    .bg-gradient__orb--3 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(34, 211, 238, 0.25), transparent 70%);
+      bottom: -100px; left: 30%;
+      animation-delay: -14s;
+    }
+
+    .bg-gradient__grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -30px) scale(1.05); }
+      66% { transform: translate(-20px, 20px) scale(0.95); }
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section { padding: 100px 0; }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      transition: background 0.3s, backdrop-filter 0.3s, border-color 0.3s;
+    }
+
+    .nav.scrolled {
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav__inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav__logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .nav__logo-icon {
+      width: 36px; height: 36px;
+      background: var(--gradient-1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .nav__links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav__links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav__links a:hover { color: var(--text); }
+
+    .nav__cta {
+      background: var(--gradient-1);
+      color: white !important;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      transition: transform 0.2s, box-shadow 0.2s !important;
+    }
+
+    .nav__cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+
+    .nav__burger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .nav__burger span {
+      width: 24px; height: 2px;
+      background: var(--text);
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      text-decoration: none;
+    }
+
+    .btn--primary {
+      background: var(--gradient-1);
+      color: white;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn--primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 40px var(--accent-glow);
+    }
+
+    .btn--secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn--secondary:hover {
+      background: var(--surface-hover);
+      border-color: var(--border-hover);
+    }
+
+    .btn--large {
+      padding: 18px 36px;
+      font-size: 1.05rem;
+      border-radius: var(--radius);
+    }
+
+    .btn--full { width: 100%; }
+
+    /* Hero */
+    .hero {
+      padding: 160px 0 120px;
+      text-align: center;
+    }
+
+    .hero__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero__badge-dot {
+      width: 8px; height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .hero__title {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.8s ease 0.1s both;
+    }
+
+    .hero__title-gradient {
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero__subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 auto 40px;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero__actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .hero__stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-top: 80px;
+      animation: fadeInUp 0.8s ease 0.4s both;
+    }
+
+    .hero__stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      background: var(--gradient-2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero__stat-label {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Section headers */
+    .section-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .section-header__label {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-light);
+      margin-bottom: 16px;
+    }
+
+    .section-header__title {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .section-header__desc {
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* Glass card */
+    .glass {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+
+    .glass:hover {
+      border-color: var(--border-hover);
+    }
+
+    /* Features */
+    .features__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: var(--gradient-1);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+
+    .feature-card__icon {
+      width: 52px; height: 52px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+
+    .feature-card__title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .feature-card__desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* How it works */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 40px;
+      left: 12.5%;
+      right: 12.5%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--purple), var(--cyan));
+      opacity: 0.3;
+    }
+
+    .step {
+      text-align: center;
+      position: relative;
+    }
+
+    .step__number {
+      width: 80px; height: 80px;
+      margin: 0 auto 24px;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step__number::before {
+      content: attr(data-num);
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-secondary);
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      -webkit-text-fill-color: var(--text);
+      font-size: 1.25rem;
+    }
+
+    .step__title {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .step__desc {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    /* Statistics */
+    .stats {
+      padding: 80px 0;
+    }
+
+    .stats__grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .stat-card {
+      padding: 32px;
+      text-align: center;
+    }
+
+    .stat-card__value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .stat-card__label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Pricing */
+    .pricing__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      align-items: center;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    .pricing__card {
+      padding: 40px 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pricing__card--featured {
+      padding: 48px 36px;
+      border-color: rgba(99, 102, 241, 0.35);
+      box-shadow: 0 0 60px rgba(99, 102, 241, 0.15);
+      transform: scale(1.04);
+      z-index: 2;
+    }
+
+    .pricing__card--featured::after {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: conic-gradient(from 0deg, transparent, var(--accent-glow), transparent 30%);
+      animation: rotate 8s linear infinite;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    .pricing__card--basic {
+      opacity: 0.85;
+    }
+
+    .pricing__card--basic:hover,
+    .pricing__card--enterprise:hover {
+      opacity: 1;
+    }
+
+    .pricing__card--enterprise {
+      background: rgba(168, 85, 247, 0.04);
+      border-color: rgba(168, 85, 247, 0.15);
+    }
+
+    .pricing__badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-light);
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pricing__badge--muted {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-dim);
+    }
+
+    .pricing__badge--premium {
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--purple);
+    }
+
+    .pricing__badge--placeholder {
+      visibility: hidden;
+    }
+
+    @keyframes rotate {
+      to { transform: rotate(360deg); }
+    }
+
+    .pricing__name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pricing__price {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pricing__price span {
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .pricing__period {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pricing__features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pricing__features li {
+      padding: 10px 0;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pricing__features li::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .pricing__features li.disabled {
+      color: var(--text-dim);
+      opacity: 0.5;
+    }
+
+    .pricing__features li.disabled::before {
+      content: '—';
+      color: var(--text-dim);
+    }
+
+    .pricing__card .btn {
+      margin-top: auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Tool section */
+    .tool {
+      padding: 100px 0;
+    }
+
+    .tool__card {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 48px;
+    }
+
+    .tool__card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .tool__card-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      font-size: 0.95rem;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 16px 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .form-input::placeholder { color: var(--text-dim); }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* Testimonials */
+    .testimonials__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .testimonial-card {
+      padding: 32px;
+    }
+
+    .testimonial-card__stars {
+      color: #fbbf24;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      letter-spacing: 2px;
+    }
+
+    .testimonial-card__text {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+      line-height: 1.7;
+    }
+
+    .testimonial-card__author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .testimonial-card__avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--gradient-1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .testimonial-card__name {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .testimonial-card__role {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    /* FAQ */
+    .faq__list {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .faq__item {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faq__question {
+      width: 100%;
+      padding: 24px 0;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .faq__question:hover { color: var(--accent-light); }
+
+    .faq__icon {
+      font-size: 1.25rem;
+      color: var(--text-dim);
+      transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+
+    .faq__item.active .faq__icon {
+      transform: rotate(45deg);
+    }
+
+    .faq__answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+
+    .faq__item.active .faq__answer {
+      max-height: 200px;
+      padding-bottom: 24px;
+    }
+
+    .faq__answer p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Footer */
+    .footer {
+      padding: 64px 0 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer__grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+
+    .footer__brand p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 16px;
+      max-width: 280px;
+    }
+
+    .footer__col h4 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+    }
+
+    .footer__col ul {
+      list-style: none;
+    }
+
+    .footer__col li { margin-bottom: 12px; }
+
+    .footer__col a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+
+    .footer__col a:hover { color: var(--text); }
+
+    .footer__bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.95) translateY(20px);
+      transition: transform 0.3s;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal--wide { max-width: 560px; }
+
+    .modal__header {
+      padding: 28px 32px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal__title {
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .modal__close {
+      width: 36px; height: 36px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .modal__close:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .modal__body { padding: 28px 32px 32px; }
+
+    .modal__text {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .modal__text h3 {
+      color: var(--text);
+      font-size: 1rem;
+      margin: 24px 0 8px;
+    }
+
+    /* Payment success */
+    .payment-success {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .payment-success__icon {
+      width: 80px; height: 80px;
+      margin: 0 auto 24px;
+      background: rgba(34, 197, 94, 0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      animation: successPop 0.5s ease;
+    }
+
+    @keyframes successPop {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .payment-success__title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .payment-success__desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Analysis stages */
+    .analysis-stages {
+      list-style: none;
+    }
+
+    .analysis-stage {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 0;
+      opacity: 0;
+      transform: translateX(-16px);
+      transition: opacity 0.4s, transform 0.4s;
+    }
+
+    .analysis-stage.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .analysis-stage__check {
+      width: 28px; height: 28px;
+      background: rgba(34, 197, 94, 0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-size: 14px;
+      flex-shrink: 0;
+      transform: scale(0);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .analysis-stage.visible .analysis-stage__check {
+      transform: scale(1);
+    }
+
+    .analysis-stage__text {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .analysis-stage.visible .analysis-stage__text {
+      color: var(--text);
+    }
+
+    .analysis-progress {
+      height: 4px;
+      background: var(--surface);
+      border-radius: 4px;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+
+    .analysis-progress__bar {
+      height: 100%;
+      background: var(--gradient-1);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    /* Result */
+    .result {
+      text-align: center;
+    }
+
+    .result__icon {
+      width: 100px; height: 100px;
+      margin: 0 auto 24px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 2px solid rgba(34, 197, 94, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      animation: successPop 0.6s ease;
+    }
+
+    .result__title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .result__value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      padding: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      letter-spacing: 0.02em;
+    }
+
+    .result__value span {
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .result__confidence {
+      color: var(--green);
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .result__error {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 24px;
+      font-size: 0.95rem;
+    }
+
+    .card-icon { font-size: 24px; margin-right: 4px; }
+
+    /* Mobile nav */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 68px; left: 0; right: 0;
+      background: rgba(10, 10, 15, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 24px;
+      z-index: 99;
+    }
+
+    .mobile-menu.active { display: block; }
+
+    .mobile-menu ul {
+      list-style: none;
+    }
+
+    .mobile-menu li { margin-bottom: 16px; }
+
+    .mobile-menu a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      display: block;
+      padding: 8px 0;
+    }
+
+    .mobile-menu__cta {
+      display: block;
+      margin-top: 8px;
+      text-align: center;
+      background: var(--gradient-1);
+      color: white !important;
+      padding: 14px 20px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .features__grid,
+      .testimonials__grid { grid-template-columns: 1fr 1fr; }
+      .steps { grid-template-columns: repeat(2, 1fr); gap: 40px; }
+      .steps::before { display: none; }
+      .stats__grid { grid-template-columns: repeat(2, 1fr); }
+      .footer__grid { grid-template-columns: 1fr 1fr; }
+      .pricing__grid {
+        grid-template-columns: 1fr;
+        max-width: 420px;
+      }
+      .pricing__card--featured {
+        transform: none;
+        order: -1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 0 20px; }
+      section { padding: 72px 0; }
+      .nav { padding: 12px 0; }
+      .nav__logo { font-size: 1.1rem; }
+      .nav__logo-icon { width: 32px; height: 32px; font-size: 16px; }
+      .nav__links { display: none; }
+      .nav__burger { display: flex; }
+
+      .hero {
+        padding: 110px 0 64px;
+        text-align: center;
+      }
+
+      .hero__badge {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+        margin-bottom: 24px;
+        line-height: 1.4;
+      }
+
+      .hero__subtitle {
+        margin-bottom: 32px;
+        padding: 0 4px;
+      }
+
+      .hero__actions {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0 8px;
+      }
+
+      .hero__actions .btn {
+        width: 100%;
+      }
+
+      .hero__stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 56px;
+        padding: 0 4px;
+      }
+
+      .hero__stat-value {
+        font-size: 1.35rem;
+      }
+
+      .hero__stat-label {
+        font-size: 0.72rem;
+        line-height: 1.3;
+      }
+
+      .section-header {
+        margin-bottom: 40px;
+      }
+
+      .section-header__desc {
+        padding: 0 8px;
+      }
+
+      .features__grid,
+      .testimonials__grid,
+      .steps,
+      .stats__grid { grid-template-columns: 1fr; }
+
+      .feature-card,
+      .testimonial-card,
+      .stat-card { padding: 28px 24px; }
+
+      .step__number {
+        width: 64px;
+        height: 64px;
+      }
+
+      .form-row { grid-template-columns: 1fr; }
+
+      .form-input {
+        font-size: 16px;
+        padding: 14px 16px;
+      }
+
+      .btn {
+        min-height: 48px;
+        padding: 14px 24px;
+      }
+
+      .btn--large {
+        padding: 16px 24px;
+        font-size: 1rem;
+      }
+
+      .tool__card,
+      .pricing__card {
+        padding: 28px 20px;
+      }
+
+      .pricing__price {
+        font-size: 2.75rem;
+      }
+
+      .pricing__card--featured {
+        padding: 32px 20px;
+      }
+
+      .modal {
+        max-height: 85vh;
+        border-radius: 20px 20px 0 0;
+        align-self: flex-end;
+      }
+
+      .modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+      }
+
+      .modal__header {
+        padding: 20px 20px 0;
+      }
+
+      .modal__body {
+        padding: 20px 20px 28px;
+      }
+
+      .modal__title {
+        font-size: 1.2rem;
+      }
+
+      .result__value {
+        font-size: 1.75rem;
+        padding: 20px 16px;
+        word-break: break-word;
+      }
+
+      .footer__grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+
+      .footer__bottom {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+        font-size: 0.8rem;
+      }
+
+      .bg-gradient__orb--1 {
+        width: 320px;
+        height: 320px;
+      }
+
+      .bg-gradient__orb--2 {
+        width: 280px;
+        height: 280px;
+      }
+
+      .bg-gradient__orb--3 {
+        width: 240px;
+        height: 240px;
+      }
+
+      .faq__question {
+        font-size: 0.95rem;
+        padding: 20px 0;
+      }
+
+      .tool__card-subtitle {
+        font-size: 0.85rem;
+        line-height: 1.5;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .hero__stats {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .hero__stat-value {
+        font-size: 1.75rem;
+      }
+
+      .hero__stat-label {
+        font-size: 0.8rem;
+      }
+    }
+
+    @supports (padding: env(safe-area-inset-bottom)) {
+      .modal__body {
+        padding-bottom: calc(28px + env(safe-area-inset-bottom));
+      }
+
+      .footer {
+        padding-bottom: calc(32px + env(safe-area-inset-bottom));
+      }
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-gradient">
+    <div class="bg-gradient__orb bg-gradient__orb--1"></div>
+    <div class="bg-gradient__orb bg-gradient__orb--2"></div>
+    <div class="bg-gradient__orb bg-gradient__orb--3"></div>
+    <div class="bg-gradient__grid"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav" id="nav">
+    <div class="container nav__inner">
+      <a href="#" class="nav__logo">
+        <div class="nav__logo-icon">І</div>
+        ІніціалAI
+      </a>
+      <ul class="nav__links">
+        <li><a href="#features">Можливості</a></li>
+        <li><a href="#how-it-works">Як це працює</a></li>
+        <li><a href="#pricing">Тарифи</a></li>
+        <li><a href="#tool">Інструмент</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#tool" class="nav__cta">Спробувати зараз</a></li>
+      </ul>
+      <button class="nav__burger" id="burger" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <ul>
+      <li><a href="#features">Можливості</a></li>
+      <li><a href="#how-it-works">Як це працює</a></li>
+      <li><a href="#pricing">Тарифи</a></li>
+      <li><a href="#tool">Інструмент</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#tool" class="mobile-menu__cta">Спробувати зараз</a></li>
+    </ul>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero__badge">
+        <span class="hero__badge-dot"></span>
+        Підтримується Міністерством цифрової трансформації*
+      </div>
+      <h1 class="hero__title">
+        Визначення ініціалів<br>
+        <span class="hero__title-gradient">нового покоління</span>
+      </h1>
+      <p class="hero__subtitle">
+        Штучний інтелект, мовний аналіз та інноваційні алгоритми для автоматичного визначення формату ПІБ.
+      </p>
+      <div class="hero__actions">
+        <a href="#tool" class="btn btn--primary btn--large">Спробувати зараз</a>
+        <a href="#how-it-works" class="btn btn--secondary btn--large">Дізнатися більше</a>
+      </div>
+      <div class="hero__stats">
+        <div>
+          <div class="hero__stat-value">2.4M+</div>
+          <div class="hero__stat-label">Оброблених ПІБ</div>
+        </div>
+        <div>
+          <div class="hero__stat-value">99.99%</div>
+          <div class="hero__stat-label">Точність системи</div>
+        </div>
+        <div>
+          <div class="hero__stat-value">847</div>
+          <div class="hero__stat-label">Корпоративних клієнтів</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-header__label">Можливості</span>
+        <h2 class="section-header__title">Технології майбутнього вже сьогодні</h2>
+        <p class="section-header__desc">Наша платформа поєднує найсучасніші досягнення штучного інтелекту та лінгвістики для бездоганного результату.</p>
+      </div>
+      <div class="features__grid">
+        <div class="feature-card glass reveal">
+          <div class="feature-card__icon">🧠</div>
+          <h3 class="feature-card__title">AI Аналіз</h3>
+          <p class="feature-card__desc">Нейронна мережа GPT-7, навчена на 47 мільйонах українських ПІБ, проводить глибокий семантичний аналіз кожного символу з урахуванням морфологічних, етимологічних та діалектних особливостей.</p>
+        </div>
+        <div class="feature-card glass reveal">
+          <div class="feature-card__icon">⚡</div>
+          <h3 class="feature-card__title">Миттєвий результат</h3>
+          <p class="feature-card__desc">Квантові обчислення на 12 GPU-кластерах забезпечують обробку запиту за 0.003 секунди — швидше, ніж ви встигнете моргнути. Результат з'являється ще до завершення натискання кнопки.</p>
+        </div>
+        <div class="feature-card glass reveal">
+          <div class="feature-card__icon">🎯</div>
+          <h3 class="feature-card__title">99.99% точність</h3>
+          <p class="feature-card__desc">Алгоритми державного рівня, сертифіковані ISO 27001, NATO STANAG та ДСТУ, гарантують абсолютну точність. Кожен результат проходить 14-етапну верифікацію цифровими філологами.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how-it-works">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-header__label">Процес</span>
+        <h2 class="section-header__title">Як це працює</h2>
+        <p class="section-header__desc">Чотири етапи від введення даних до експертного висновку — повністю автоматизовано.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step__number" data-num="1"></div>
+          <h3 class="step__title">Введення даних</h3>
+          <p class="step__desc">Введіть повне ПІБ у захищене поле з AES-256 шифруванням</p>
+        </div>
+        <div class="step reveal">
+          <div class="step__number" data-num="2"></div>
+          <h3 class="step__title">AI аналіз</h3>
+          <p class="step__desc">12 нейронних мереж одночасно аналізують структуру імені</p>
+        </div>
+        <div class="step reveal">
+          <div class="step__number" data-num="3"></div>
+          <h3 class="step__title">Обробка алгоритмами</h3>
+          <p class="step__desc">Статистичні моделі порівнюють з 2.4 млн еталонних записів</p>
+        </div>
+        <div class="step reveal">
+          <div class="step__number" data-num="4"></div>
+          <h3 class="step__title">Формування результату</h3>
+          <p class="step__desc">Експертна система генерує верифікований формат ініціалів</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Statistics -->
+  <section class="stats">
+    <div class="container">
+      <div class="stats__grid">
+        <div class="stat-card glass reveal">
+          <div class="stat-card__value" data-target="2400000">0</div>
+          <div class="stat-card__label">Оброблених ПІБ</div>
+        </div>
+        <div class="stat-card glass reveal">
+          <div class="stat-card__value" data-target="99.99">0</div>
+          <div class="stat-card__label">% точності</div>
+        </div>
+        <div class="stat-card glass reveal">
+          <div class="stat-card__value" data-target="847">0</div>
+          <div class="stat-card__label">Корпоративних клієнтів</div>
+        </div>
+        <div class="stat-card glass reveal">
+          <div class="stat-card__value" data-target="24">0</div>
+          <div class="stat-card__label">/7 підтримка</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-header__label">Тарифи</span>
+        <h2 class="section-header__title">Оберіть свій план</h2>
+        <p class="section-header__desc">Три тарифи для будь-яких потреб — від особистого використання до корпоративних рішень.</p>
+      </div>
+      <div class="pricing__grid">
+        <div class="pricing__card pricing__card--basic glass reveal">
+          <span class="pricing__badge pricing__badge--muted">Базовий</span>
+          <h3 class="pricing__name">Starter</h3>
+          <div class="pricing__price">49 <span>грн</span></div>
+          <p class="pricing__period">за одне визначення</p>
+          <ul class="pricing__features">
+            <li>1 визначення на день</li>
+            <li>Базовий AI-аналіз</li>
+            <li class="disabled">Підтримка 24/7</li>
+            <li class="disabled">Розширена обробка ПІБ</li>
+          </ul>
+          <button class="btn btn--secondary btn--large btn--full" onclick="scrollToTool()">Обрати Starter</button>
+        </div>
+
+        <div class="pricing__card pricing__card--featured glass reveal">
+          <span class="pricing__badge">Найпопулярніший</span>
+          <h3 class="pricing__name">Professional</h3>
+          <div class="pricing__price">199 <span>грн</span></div>
+          <p class="pricing__period">за одне визначення</p>
+          <ul class="pricing__features">
+            <li>Безлімітні визначення</li>
+            <li>AI-аналітика</li>
+            <li>Підтримка 24/7</li>
+            <li>Розширена обробка ПІБ</li>
+          </ul>
+          <button class="btn btn--primary btn--large btn--full" onclick="scrollToTool()">Визначити за 199 грн</button>
+        </div>
+
+        <div class="pricing__card pricing__card--enterprise glass reveal">
+          <span class="pricing__badge pricing__badge--premium">Для бізнесу</span>
+          <h3 class="pricing__name">Enterprise</h3>
+          <div class="pricing__price">999 <span>грн</span></div>
+          <p class="pricing__period">за одне визначення</p>
+          <ul class="pricing__features">
+            <li>Безлімітні визначення</li>
+            <li>Квантовий AI-аналіз</li>
+            <li>VIP-підтримка 24/7</li>
+            <li>API + SLA 99.999%</li>
+          </ul>
+          <button class="btn btn--secondary btn--large btn--full" onclick="scrollToTool()">Зв'язатися з відділом продажів</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Tool -->
+  <section id="tool" class="tool">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-header__label">Інструмент</span>
+        <h2 class="section-header__title">Спробуйте прямо зараз</h2>
+        <p class="section-header__desc">Введіть ПІБ та отримайте професійно сформовані ініціали за секунди.</p>
+      </div>
+      <div class="tool__card glass reveal">
+        <h3 class="tool__card-title">AI-генератор ініціалів</h3>
+        <p class="tool__card-subtitle">Захищене з'єднання · Шифрування AES-256 · GDPR-сумісність</p>
+        <div class="form-group">
+          <label class="form-label" for="fullName">Введіть ПІБ</label>
+          <input type="text" id="fullName" class="form-input" placeholder="Наприклад: Петренко Іван Васильович">
+        </div>
+        <button class="btn btn--primary btn--large btn--full" id="analyzeBtn">Визначити за 199 грн</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-header__label">Відгуки</span>
+        <h2 class="section-header__title">Нам довіряють професіонали</h2>
+        <p class="section-header__desc">Тисячі організацій вже використовують ІніціалAI у щоденній роботі.</p>
+      </div>
+      <div class="testimonials__grid">
+        <div class="testimonial-card glass reveal">
+          <div class="testimonial-card__stars">★★★★★</div>
+          <p class="testimonial-card__text">«Раніше на формування ініціалів у документах йшло 15 хвилин. Тепер — 3 секунди. ROI — 14 000%. Найкраща інвестиція в наш IT-стек.»</p>
+          <div class="testimonial-card__author">
+            <div class="testimonial-card__avatar">ОК</div>
+            <div>
+              <div class="testimonial-card__name">Олена Кovalenko</div>
+              <div class="testimonial-card__role">CTO, TechNova Ukraine</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card glass reveal">
+          <div class="testimonial-card__stars">★★★★★</div>
+          <p class="testimonial-card__text">«Ми протестували 47 рішень для форматування ПІБ. ІніціалAI — єдине, що пройшло аудит без зауважень. Точність перевищує людську.»</p>
+          <div class="testimonial-card__author">
+            <div class="testimonial-card__avatar">МБ</div>
+            <div>
+              <div class="testimonial-card__name">Михайло Bondarenko</div>
+              <div class="testimonial-card__role">Директор, Держреєстр</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card glass reveal">
+          <div class="testimonial-card__stars">★★★★★</div>
+          <p class="testimonial-card__text">«Квантове визначення ініціалів — це не маркетинг. Це реальність. Наша юридична фірма обробляє 500+ ПІБ на день без жодної помилки.»</p>
+          <div class="testimonial-card__author">
+            <div class="testimonial-card__avatar">АЛ</div>
+            <div>
+              <div class="testimonial-card__name">Анна Lysenko</div>
+              <div class="testimonial-card__role">Partner, LexPro Group</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-header__label">FAQ</span>
+        <h2 class="section-header__title">Часті запитання</h2>
+        <p class="section-header__desc">Все, що потрібно знати про нашу платформу.</p>
+      </div>
+      <div class="faq__list reveal">
+        <div class="faq__item">
+          <button class="faq__question">
+            Як працює AI-аналіз ініціалів?
+            <span class="faq__icon">+</span>
+          </button>
+          <div class="faq__answer">
+            <p>Наша система використовує 12 паралельних нейронних мереж, навчених на 47 мільйонах українських ПІБ. Кожен запит проходить через семантичний аналіз, морфологічну верифікацію та порівняння з державними базами даних для формування точного результату.</p>
+          </div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__question">
+            Чи безпечні мої дані?
+            <span class="faq__icon">+</span>
+          </button>
+          <div class="faq__answer">
+            <p>Абсолютно. Усі дані шифруються за стандартом AES-256, передаються через TLS 1.3 і автоматично видаляються через 0.003 секунди після обробки. Ми сертифіковані за ISO 27001 та GDPR.</p>
+          </div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__question">
+            Чому 199 грн за одне визначення?
+            <span class="faq__icon">+</span>
+          </button>
+          <div class="faq__answer">
+            <p>Кожне визначення залучає 12 GPU-кластерів, 3 нейронні мережі та консультацію цифрових філологів. Вартість покриває обчислювальні ресурси, ліцензії на бази даних та 24/7 підтримку експертів.</p>
+          </div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__question">
+            Які формати ПІБ підтримуються?
+            <span class="faq__icon">+</span>
+          </button>
+          <div class="faq__answer">
+            <p>Платформа підтримує стандартний український формат: Прізвище Ім'я По батькові. Наприклад: «Петренко Іван Васильович» → «Петренко І.В.». Планується підтримка 847 додаткових форматів у наступному оновленні.</p>
+          </div>
+        </div>
+        <div class="faq__item">
+          <button class="faq__question">
+            Чи є API для інтеграції?
+            <span class="faq__icon">+</span>
+          </button>
+          <div class="faq__answer">
+            <p>Так, REST API та GraphQL endpoint доступні для корпоративних клієнтів. Документація включає SDK для Python, Node.js, Java та COBOL. Середній час відгуку — 12ms.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div class="footer__brand">
+          <a href="#" class="nav__logo">
+            <div class="nav__logo-icon">І</div>
+            ІніціалAI
+          </a>
+          <p>Революційна платформа для автоматичного визначення формату ініціалів українських ПІБ за допомогою штучного інтелекту.</p>
+        </div>
+        <div class="footer__col">
+          <h4>Продукт</h4>
+          <ul>
+            <li><a href="#features">Можливості</a></li>
+            <li><a href="#pricing">Тарифи</a></li>
+            <li><a href="#tool">Інструмент</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="footer__col">
+          <h4>Компанія</h4>
+          <ul>
+            <li><a href="#">Про нас</a></li>
+            <li><a href="#">Кар'єра</a></li>
+            <li><a href="#">Блог</a></li>
+            <li><a href="#">Контакти</a></li>
+          </ul>
+        </div>
+        <div class="footer__col">
+          <h4>Правова інформація</h4>
+          <ul>
+            <li><a onclick="openModal('privacyModal')">Політика конфіденційності</a></li>
+            <li><a onclick="openModal('termsModal')">Умови використання</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <span>© 2026 ІніціалAI. Усі права захищені.</span>
+        <span>* Вигадана маркетингова заява</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Payment Modal -->
+  <div class="modal-overlay" id="paymentModal">
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title">Оплата доступу</h2>
+        <button class="modal__close" onclick="closeModal('paymentModal')">&times;</button>
+      </div>
+      <div class="modal__body" id="paymentBody">
+        <div class="form-group">
+          <label class="form-label" for="cardNumber">Номер картки</label>
+          <input type="text" id="cardNumber" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="cardExpiry">MM/YY</label>
+            <input type="text" id="cardExpiry" class="form-input" placeholder="MM/YY" maxlength="5">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cardCvv">CVV</label>
+            <input type="text" id="cardCvv" class="form-input" placeholder="123" maxlength="4">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="cardName">Ім'я власника</label>
+          <input type="text" id="cardName" class="form-input" placeholder="IVAN PETRENKO">
+        </div>
+        <button class="btn btn--primary btn--large btn--full" id="payBtn">Оплатити 199 грн</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analysis Modal -->
+  <div class="modal-overlay" id="analysisModal">
+    <div class="modal modal--wide">
+      <div class="modal__header">
+        <h2 class="modal__title" id="analysisTitle">Виконується аналіз</h2>
+        <button class="modal__close" onclick="closeAnalysis()" id="analysisClose" style="display:none">&times;</button>
+      </div>
+      <div class="modal__body" id="analysisBody">
+        <div class="analysis-progress">
+          <div class="analysis-progress__bar" id="progressBar"></div>
+        </div>
+        <ul class="analysis-stages" id="analysisStages">
+          <li class="analysis-stage" data-stage="0">
+            <span class="analysis-stage__check">✓</span>
+            <span class="analysis-stage__text">Підключення до нейронної мережі</span>
+          </li>
+          <li class="analysis-stage" data-stage="1">
+            <span class="analysis-stage__check">✓</span>
+            <span class="analysis-stage__text">Перевірка міжнародних баз даних</span>
+          </li>
+          <li class="analysis-stage" data-stage="2">
+            <span class="analysis-stage__check">✓</span>
+            <span class="analysis-stage__text">Консультація з цифровими філологами</span>
+          </li>
+          <li class="analysis-stage" data-stage="3">
+            <span class="analysis-stage__check">✓</span>
+            <span class="analysis-stage__text">Квантове визначення ініціалів</span>
+          </li>
+          <li class="analysis-stage" data-stage="4">
+            <span class="analysis-stage__check">✓</span>
+            <span class="analysis-stage__text">Формування експертного висновку</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy Modal -->
+  <div class="modal-overlay" id="privacyModal">
+    <div class="modal modal--wide">
+      <div class="modal__header">
+        <h2 class="modal__title">Політика конфіденційності</h2>
+        <button class="modal__close" onclick="closeModal('privacyModal')">&times;</button>
+      </div>
+      <div class="modal__body">
+        <p class="modal__text">Останнє оновлення: 31 травня 2026 року</p>
+        <p class="modal__text">Компанія ІніціалAI («ми», «нас») зобов'язується захищати конфіденційність ваших персональних даних відповідно до Закону України «Про захист персональних даних» та GDPR.</p>
+        <h3>1. Збір даних</h3>
+        <p class="modal__text">Ми збираємо лише ПІБ, введене вами для обробки. Дані не зберігаються на серверах довше 0.003 секунди після завершення аналізу.</p>
+        <h3>2. Використання даних</h3>
+        <p class="modal__text">Ваші дані використовуються виключно для формування ініціалів. Ми не передаємо дані третім сторонам, окрім цифрових філологів та квантових процесорів.</p>
+        <h3>3. Безпека</h3>
+        <p class="modal__text">Усі дані шифруються за стандартом AES-256. Наші сервери розташовані у бункері глибиною 47 метрів під Києвом.</p>
+        <h3>4. Ваші права</h3>
+        <p class="modal__text">Ви маєте право на доступ, виправлення та видалення своїх даних. Оскільки ми їх не зберігаємо, це відбувається автоматично.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terms Modal -->
+  <div class="modal-overlay" id="termsModal">
+    <div class="modal modal--wide">
+      <div class="modal__header">
+        <h2 class="modal__title">Умови використання</h2>
+        <button class="modal__close" onclick="closeModal('termsModal')">&times;</button>
+      </div>
+      <div class="modal__body">
+        <p class="modal__text">Останнє оновлення: 31 травня 2026 року</p>
+        <p class="modal__text">Використовуючи платформу ІніціалAI, ви погоджуєтесь з наступними умовами.</p>
+        <h3>1. Опис послуги</h3>
+        <p class="modal__text">ІніціалAI надає послуги автоматичного визначення формату ініціалів українських ПІБ з використанням технологій штучного інтелекту.</p>
+        <h3>2. Оплата</h3>
+        <p class="modal__text">Вартість одного визначення становить 199 грн. Оплата здійснюється до початку аналізу. Кошти не повертаються, навіть якщо результат вас здивував.</p>
+        <h3>3. Точність</h3>
+        <p class="modal__text">Ми гарантуємо точність 99.99%. Якщо результат не відповідає вашим очікуванням, ви можете спробувати ще раз за додаткові 199 грн.</p>
+        <h3>4. Обмеження відповідальності</h3>
+        <p class="modal__text">ІніціалAI не несе відповідальності за використання результатів у офіційних документах, дипломах, патентах або віршах.</p>
+        <h3>5. Інтелектуальна власність</h3>
+        <p class="modal__text">Алгоритми, нейронні мережі та цифрові філологи є власністю ІніціалAI Inc.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let pendingName = '';
+
+    // Navigation scroll effect
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Mobile menu
+    const burger = document.getElementById('burger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    burger.addEventListener('click', () => {
+      mobileMenu.classList.toggle('active');
+    });
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => mobileMenu.classList.remove('active'));
+    });
+
+    // Scroll reveal
+    const revealElements = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    revealElements.forEach(el => revealObserver.observe(el));
+
+    // Animated counters
+    const statValues = document.querySelectorAll('.stat-card__value[data-target]');
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateCounter(entry.target);
+          counterObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    statValues.forEach(el => counterObserver.observe(el));
+
+    function animateCounter(el) {
+      const target = parseFloat(el.dataset.target);
+      const isDecimal = target % 1 !== 0;
+      const duration = 2000;
+      const start = performance.now();
+
+      function update(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = target * eased;
+
+        if (isDecimal) {
+          el.textContent = current.toFixed(2);
+        } else if (target >= 1000000) {
+          el.textContent = Math.floor(current).toLocaleString('uk-UA') + '+';
+        } else if (target === 24) {
+          el.textContent = Math.floor(current);
+        } else {
+          el.textContent = Math.floor(current).toLocaleString('uk-UA');
+        }
+
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+
+    // FAQ accordion
+    document.querySelectorAll('.faq__question').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.parentElement;
+        const wasActive = item.classList.contains('active');
+        document.querySelectorAll('.faq__item').forEach(i => i.classList.remove('active'));
+        if (!wasActive) item.classList.add('active');
+      });
+    });
+
+    // Modal helpers
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay && overlay.id !== 'analysisModal') {
+          closeModal(overlay.id);
+        }
+      });
+    });
+
+    function scrollToTool() {
+      document.getElementById('mobileMenu').classList.remove('active');
+      document.getElementById('tool').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Card number formatting
+    document.getElementById('cardNumber').addEventListener('input', (e) => {
+      let val = e.target.value.replace(/\D/g, '').substring(0, 16);
+      e.target.value = val.replace(/(.{4})/g, '$1 ').trim();
+    });
+
+    document.getElementById('cardExpiry').addEventListener('input', (e) => {
+      let val = e.target.value.replace(/\D/g, '').substring(0, 4);
+      if (val.length >= 2) val = val.substring(0, 2) + '/' + val.substring(2);
+      e.target.value = val;
+    });
+
+    // Initials logic
+    function generateInitials(fullName) {
+      const trimmed = fullName.trim();
+      if (!trimmed) {
+        return { error: 'Будь ласка, введіть ПІБ.' };
+      }
+
+      const parts = trimmed.split(/\s+/).filter(p => p.length > 0);
+
+      if (parts.length < 3) {
+        return {
+          error: 'Невірний формат. Введіть ПІБ у форматі: Прізвище Ім\'я По батькові (мінімум 3 слова).'
+        };
+      }
+
+      const surname = parts[0];
+      const firstName = parts[1];
+      const patronymic = parts[2];
+
+      if (!/^[А-Яа-яІіЇїЄєҐґA-Za-z'-]+$/.test(surname) ||
+          !/^[А-Яа-яІіЇїЄєҐґA-Za-z'-]+$/.test(firstName) ||
+          !/^[А-Яа-яІіЇїЄєҐґA-Za-z'-]+$/.test(patronymic)) {
+        return { error: 'ПІБ містить недопустимі символи. Використовуйте лише літери.' };
+      }
+
+      const firstInitial = firstName.charAt(0).toUpperCase();
+      const middleInitial = patronymic.charAt(0).toUpperCase();
+
+      return { result: `${surname} ${firstInitial}.${middleInitial}.` };
+    }
+
+    // Analyze button
+    document.getElementById('analyzeBtn').addEventListener('click', () => {
+      const name = document.getElementById('fullName').value;
+      const parsed = generateInitials(name);
+
+      if (parsed.error) {
+        alert(parsed.error);
+        return;
+      }
+
+      pendingName = name;
+      resetPaymentModal();
+      openModal('paymentModal');
+    });
+
+    function resetPaymentModal() {
+      const body = document.getElementById('paymentBody');
+      body.innerHTML = `
+        <div class="form-group">
+          <label class="form-label" for="cardNumber">Номер картки</label>
+          <input type="text" id="cardNumber" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="cardExpiry">MM/YY</label>
+            <input type="text" id="cardExpiry" class="form-input" placeholder="MM/YY" maxlength="5">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cardCvv">CVV</label>
+            <input type="text" id="cardCvv" class="form-input" placeholder="123" maxlength="4">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="cardName">Ім'я власника</label>
+          <input type="text" id="cardName" class="form-input" placeholder="IVAN PETRENKO">
+        </div>
+        <button class="btn btn--primary btn--large btn--full" id="payBtn">Оплатити 199 грн</button>
+      `;
+
+      document.getElementById('cardNumber').addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '').substring(0, 16);
+        e.target.value = val.replace(/(.{4})/g, '$1 ').trim();
+      });
+
+      document.getElementById('cardExpiry').addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '').substring(0, 4);
+        if (val.length >= 2) val = val.substring(0, 2) + '/' + val.substring(2);
+        e.target.value = val;
+      });
+
+      document.getElementById('payBtn').addEventListener('click', handlePayment);
+    }
+
+    function handlePayment() {
+      const body = document.getElementById('paymentBody');
+      body.innerHTML = `
+        <div class="payment-success">
+          <div class="payment-success__icon">✓</div>
+          <h3 class="payment-success__title">Оплату прийнято!</h3>
+          <p class="payment-success__desc">199 грн успішно списано. Запускаємо AI-аналіз...</p>
+        </div>
+      `;
+
+      setTimeout(() => {
+        closeModal('paymentModal');
+        startAnalysis();
+      }, 1500);
+    }
+
+    // Bind initial pay button
+    document.getElementById('payBtn').addEventListener('click', handlePayment);
+
+    function startAnalysis() {
+      resetAnalysisModal();
+      openModal('analysisModal');
+
+      const stages = document.querySelectorAll('.analysis-stage');
+      const progressBar = document.getElementById('progressBar');
+      const totalStages = stages.length;
+
+      stages.forEach((stage, i) => {
+        setTimeout(() => {
+          stage.classList.add('visible');
+          progressBar.style.width = ((i + 1) / totalStages * 100) + '%';
+
+          if (i === totalStages - 1) {
+            setTimeout(() => showResult(), 800);
+          }
+        }, (i + 1) * 1500);
+      });
+    }
+
+    function resetAnalysisModal() {
+      document.getElementById('analysisTitle').textContent = 'Виконується аналіз';
+      document.getElementById('analysisClose').style.display = 'none';
+      document.getElementById('progressBar').style.width = '0%';
+
+      document.getElementById('analysisBody').innerHTML = `
+        <div class="analysis-progress">
+          <div class="analysis-progress__bar" id="progressBar"></div>
+        </div>
+        <ul class="analysis-stages" id="analysisStages">
+          <li class="analysis-stage" data-stage="0">
+            <span class="analysis-stage__check">✓</span>
+            <span class="analysis-stage__text">Підключення до нейронної мережі</span>
+          </li>
+          <li class="analysis-stage" data-stage="1">
+            <span class="analysis-stage__check">✓</span>
+            <span class="analysis-stage__text">Перевірка міжнародних баз даних</span>
+          </li>
+          <li class="analysis-stage" data-stage="2">
+            <span class="analysis-stage__check">✓</span>
+            <span class="analysis-stage__text">Консультація з цифровими філологами</span>
+          </li>
+          <li class="analysis-stage" data-stage="3">
+            <span class="analysis-stage__check">✓</span>
+            <span class="analysis-stage__text">Квантове визначення ініціалів</span>
+          </li>
+          <li class="analysis-stage" data-stage="4">
+            <span class="analysis-stage__check">✓</span>
+            <span class="analysis-stage__text">Формування експертного висновку</span>
+          </li>
+        </ul>
+      `;
+    }
+
+    function showResult() {
+      const parsed = generateInitials(pendingName);
+      document.getElementById('analysisTitle').textContent = 'Результат визначено';
+      document.getElementById('analysisClose').style.display = 'flex';
+
+      const confidence = (99.90 + Math.random() * 0.09).toFixed(2);
+
+      if (parsed.error) {
+        document.getElementById('analysisBody').innerHTML = `
+          <div class="result">
+            <div class="result__error">${parsed.error}</div>
+            <button class="btn btn--primary btn--large btn--full" onclick="closeAnalysis()">Спробувати ще раз</button>
+          </div>
+        `;
+      } else {
+        document.getElementById('analysisBody').innerHTML = `
+          <div class="result">
+            <div class="result__icon">✓</div>
+            <h3 class="result__title">Результат визначено</h3>
+            <div class="result__value"><span>${parsed.result}</span></div>
+            <div class="result__confidence">
+              <span>🎯</span> Точність аналізу: ${confidence}%
+            </div>
+            <button class="btn btn--primary btn--large btn--full" onclick="closeAnalysis()">Спробувати ще раз</button>
+          </div>
+        `;
+      }
+    }
+
+    function closeAnalysis() {
+      closeModal('analysisModal');
+      document.getElementById('fullName').value = '';
+      document.getElementById('fullName').focus();
+    }
+
+    // Enter key support
+    document.getElementById('fullName').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('analyzeBtn').click();
+      }
+    });
+  </script>
+</body>
+</html>
